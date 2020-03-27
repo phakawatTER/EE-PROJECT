@@ -62,19 +62,33 @@ for d in directory:
     except:
         pass
 clusters = {}
+def format_date(x):
+    if len(str(x)) == 1:
+        x= "0"+str(x)
+    return x
+def format_time(time):
+    hour,minute = time.split(":")
+    second = "00"
+    if len(hour) == 1:
+        hour = "0"+hour
+    return  ":".join([hour,minute,second])
+
 for i, time in enumerate(dataframe["time"]):
 
-    dd = 24
-    mm = 60
-    ss = 60
     try:
         day, month, time = time.split(" ")
         hour, minute = time.split(":")
         cluster = "{}-{}".format(day, month)
-        date = f"2016-{int(month)+1}-{int(day)+1}"
+        tt = format_time(time)
+        dd = format_date(int(day)+1)
+        mm = format_date(int(month)+1)
+        
+        norm_time = (int(day)+int(month)+int(hour)+int(minute))/(6+11+23+59)
+        date = f"2016-{mm}-{dd} {tt}"
         dataframe.set_value(i, "date",date )
-        # dataframe.set_value(i, "day", int(day))
-        # dataframe.set_value(i, "month", int(month))
+        dataframe.set_value(i, "time",norm_time )
+        dataframe.set_value(i, "day", day)
+        dataframe.set_value(i, "month", month)
         dataframe.set_value(i, "hour", int(hour))
         dataframe.set_value(i, "minute", int(minute))
         if cluster not in clusters:
@@ -84,8 +98,15 @@ for i, time in enumerate(dataframe["time"]):
     except Exception as err:
         print(err)
         pass
+    
+    
 dataframe.drop(columns=["time"],axis=1)
-dataframe=dataframe.reindex(columns=["date","hour","minute","load"])
+
+dataframe= dataframe.sort_values(by="date",ascending=True)
+# dataframe=dataframe.reindex(columns=["norm_time","load"])
+dataframe=dataframe.reindex(columns=["day","month","hour","minute","load"])
+# dataframe=dataframe.reindex(columns=["date","load"])
+dataframe=dataframe.dropna()# drop nan row
 dataframe.to_csv("training_set.csv", index=False)
 
 # color_list = ["ro", "go", "bo", "yo"]
