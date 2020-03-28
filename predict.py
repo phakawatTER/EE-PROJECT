@@ -24,6 +24,7 @@ class predictor:
         self.month = today.month
         self.hour = 0
         self.minute = 0
+        print(self.day,self.year)
 
     def get_predict_datetime(self):
         today = datetime.datetime.today()
@@ -51,13 +52,14 @@ class predictor:
         month =self.month
         hour = self.hour
         minute = self.minute
-        self.minute += 1
+        self.minute += 15
         if self.minute % 60 == 0:
             self.minute = 0
             self.hour+=1
         if self.hour % 24 ==0 :
             self.hour =0 
         _input = np.array([[day,month,hour,minute]]).astype(np.float32).reshape(-1,4)
+        print(_input)
         load = self.predict_load(_input)
         _time = time.time()
         df = pd.DataFrame(data={"time":[_time],"load":[load[0][0]]})
