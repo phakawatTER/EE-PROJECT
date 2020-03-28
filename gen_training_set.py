@@ -8,8 +8,9 @@ TIMES = []
 ENV_NAME = "ee-env"
 dataframe = pd.DataFrame(columns=['time', 'load'])
 current_dir = os.path.dirname(__file__)  # current path of script file
+dataset_path = os.path.join(current_dir,"dataset")
 # list directory of each day dataset
-directory = [dir for dir in os.listdir() if not os.path.isfile(dir)
+directory = [dir for dir in os.listdir(dataset_path) if not os.path.isfile(dir)
              and dir != ENV_NAME]
 
 
@@ -33,7 +34,7 @@ def get_month(month):
 
 
 for d in directory:
-    files = os.listdir(d)
+    files = os.listdir(os.path.join(dataset_path,d))
     try:
         for file in files:
             try:
@@ -46,14 +47,14 @@ for d in directory:
                 dd = DAYS.index(dd)
                 mm = MONTHS.index(mm)
                 dt = "{} {} ".format(dd, mm)
-                file_path = os.path.join(d, file)
+                file_path = os.path.join(dataset_path,d ,file)
                 csv = pd.read_csv(file_path)
                 csv.rename(columns={"Category": "time",
                                     "Krabi": "load"}, inplace=True)
                 for i, t in enumerate(csv["time"]):
                     try:
                         new_time = dt+t
-                        csv.set_value(i, "time", new_time)
+                        csv.at[i, "time"]= new_time
                     except:
                         pass
                 dataframe = dataframe.append(csv, ignore_index=True)
@@ -85,20 +86,18 @@ for i, time in enumerate(dataframe["time"]):
         
         norm_time = (int(day)+int(month)+int(hour)+int(minute))/(6+11+23+59)
         date = f"2016-{mm}-{dd} {tt}"
-        dataframe.set_value(i, "date",date )
-        dataframe.set_value(i, "time",norm_time )
-        dataframe.set_value(i, "day", day)
-        dataframe.set_value(i, "month", month)
-        dataframe.set_value(i, "hour", int(hour))
-        dataframe.set_value(i, "minute", int(minute))
+        dataframe.at[i, "date"]=date
+        dataframe.at[i, "time"]=norm_time
+        dataframe.at[i, "day"]= day
+        dataframe.at[i, "month"]= month
+        dataframe.at[i, "hour"]= int(hour)
+        dataframe.at[i, "minute"]= int(minute)
         if cluster not in clusters:
             clusters[cluster] = {"time": [], "load": []}
         clusters[cluster]["time"].append(dataframe["time"][i])
         clusters[cluster]["load"].append(dataframe["load"][i])
     except Exception as err:
-        print(err)
         pass
-    
     
 dataframe.drop(columns=["time"],axis=1)
 
@@ -108,6 +107,8 @@ dataframe=dataframe.reindex(columns=["day","month","hour","minute","load"])
 # dataframe=dataframe.reindex(columns=["date","load"])
 dataframe=dataframe.dropna()# drop nan row
 dataframe.to_csv("training_set.csv", index=False)
+
+print("Successfully create training set ...")
 
 # color_list = ["ro", "go", "bo", "yo"]
 # for i, c in enumerate(clusters):
