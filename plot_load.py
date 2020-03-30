@@ -19,6 +19,7 @@ class plot_load:
             graph_data = pd.read_csv(os.path.join(current_dir,"graph_data","load.csv"))
             self.ax1.clear()
             self.ax1.plot(graph_data["time"],graph_data["load"])
+            self.ax1.scatter(graph_data["time"],graph_data["load"],color="r")
         except:
             pass
         
