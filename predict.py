@@ -1,5 +1,5 @@
 from  tensorflow.keras.models import load_model
-from tensorflow.keras.backend import set_session
+from tensorflow.compat.v1.keras.backend import set_session
 import tensorflow as tf
 import numpy as np
 import schedule
@@ -10,7 +10,7 @@ import os
 
 config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
-sess = tf.Session(config=config)
+sess = tf.compat.v1.Session(config=config)
 set_session(sess)
 
 current_dir = os.path.dirname(__file__)
