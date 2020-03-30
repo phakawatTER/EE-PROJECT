@@ -17,7 +17,6 @@ class predictor:
         self.dataframe = pd.DataFrame(columns=["time","load"])
         self.predict_period = predict_period
         self.model = load_model(model_path) # model for prediction
-
         today = datetime.datetime.today()
         self.day = (today.weekday()+1)%7
         self.year = today.year
@@ -52,7 +51,7 @@ class predictor:
         month =self.month
         hour = self.hour
         minute = self.minute
-        self.minute += 15
+        self.minute += 1
         if self.minute % 60 == 0:
             self.minute = 0
             self.hour+=1
