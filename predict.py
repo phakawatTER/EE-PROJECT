@@ -1,4 +1,6 @@
 from  tensorflow.keras.models import load_model
+from tensorflow.keras.backend import set_session
+import tensorflow as tf
 import numpy as np
 import schedule
 import datetime 
@@ -6,24 +8,33 @@ import pandas as pd
 import time
 import os
 
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(config=config)
+set_session(sess)
 
 current_dir = os.path.dirname(__file__)
 
 class predictor:
     # predict_period is in "minute"
-    def __init__(self,model_path="",predict_period=0.05,test_mode=False ):
+    def __init__(self,model_path="",predict_period=0.05,test_mode=False,use_gpu=True):
         self.test_mode = test_mode
         self.start_time = time.time() # start prediction time
         self.dataframe = pd.DataFrame(columns=["time","load"])
         self.predict_period = predict_period
-        self.model = load_model(model_path) # model for prediction
+        self.use_gpu = use_gpu
+        self.device = "/device:CPU:0"
+        if self.use_gpu:
+            self.device = "/GPU:0"
+        print("THIS IS DEVICE {}".format(self.device))
+        with tf.device(self.device):
+            self.model = load_model(model_path) # model for prediction
         today = datetime.datetime.today()
         self.day = (today.weekday()+1)%7
         self.year = today.year
         self.month = today.month
         self.hour = 0
         self.minute = 0
-        print(self.day,self.year)
 
     def get_predict_datetime(self):
         today = datetime.datetime.today()
@@ -35,8 +46,9 @@ class predictor:
         return np.array([[day,month,hour,minute]]).astype(np.float32).reshape(-1,4)
 
     def predict_load(self,time):
-        p_load = self.model.predict(time)
-        return p_load
+        with tf.device(self.device):
+            p_load = self.model.predict(time)
+            return p_load
 
     def job(self):
         input_time = self.get_predict_datetime()
@@ -87,10 +99,12 @@ if __name__=="__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("-m","--model",required=False,help="Path to your model file..",default="model/model1.h5")
     ap.add_argument("-t","--test",required=False,help="Enable test mode",default=False,type=bool)
-    args = vars(ap.parse_args())
+    ap.add_argument("--gpu",required=False,default=False,help="Flag to use GPU for predicting")
+    args = vars(ap.parse_args());
     model_path = args["model"]
+    use_gpu = args["gpu"]
     test_mode = args["test"]
-    pred = predictor(model_path=model_path,test_mode=test_mode)
+    pred = predictor(model_path=model_path,test_mode=test_mode,use_gpu=use_gpu)
     pred.run() # start prediction process
     
     
