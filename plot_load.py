@@ -18,11 +18,13 @@ class plot_load:
         try:
             graph_data = pd.read_csv(os.path.join(current_dir,"graph_data","load.csv"))
             self.ax1.clear()
+            self.ax1.tick_params(axis='x', labelrotation=90)
             self.ax1.plot(graph_data["time"],graph_data["load"])
+            self.ax1.set_xlabel('datetime')
+            self.ax1.set_ylabel('load')
             self.ax1.scatter(graph_data["time"],graph_data["load"],color="r")
         except:
             pass
-        
 
 if __name__ == "__main__":
     plot_load()

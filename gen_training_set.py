@@ -109,11 +109,3 @@ dataframe=dataframe.dropna()# drop nan row
 dataframe.to_csv("training_set.csv", index=False)
 
 print("Successfully create training set ...")
-
-# color_list = ["ro", "go", "bo", "yo"]
-# for i, c in enumerate(clusters):
-#     cluster = clusters[c]
-#     time = cluster["time"]
-#     load = cluster["load"]
-#     plt.plot(time, load, color_list[i % len(color_list)-1])
-# plt.show()
