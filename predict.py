@@ -23,6 +23,9 @@ class predictor:
         self.start_time = time.time() # start prediction time
         self.dataframe = pd.DataFrame(columns=["time","load"])
         self.predict_period = math.ceil(predict_period)
+        self.iteration = 0
+        today = datetime.datetime.today() # get today datetime
+        self.start_datetime = today.replace(hour=0,minute=0,second=0.00)
         self.use_gpu = use_gpu
         self.device = "/device:CPU:0"
         if self.use_gpu:
@@ -39,7 +42,6 @@ class predictor:
         self.minute = 0
 
     def get_predict_datetime(self,prediction_time):
-        # prediction_time = datetime.datetime.today()
         day = (prediction_time.weekday()+1)%7
         month = prediction_time.month
         hour = prediction_time.hour
@@ -98,20 +100,6 @@ class predictor:
         while True:
             schedule.run_pending()
             if not test_mode:
-                # now = datetime.datetime.now()
-                # hour = now.hour
-                # minute = now.minute
-                # second = now.second
-                # multiplier = math.ceil(minute / self.predict_period)
-                # if multiplier == 0:
-                #     multiplier +=1
-                # next_predict_minute = (self.predict_period * multiplier) % 60
-                # minute_diff = next_predict_minute - minute 
-                # if minute_diff == 0 :
-                #     minute_diff += self.predict_period  
-                # timedelta = datetime.timedelta(minutes=minute_diff)
-                # prediction_time = now+timedelta
-                # sleep_time = minute_diff*60
                 self.job()
             else:
                 self.test()
@@ -151,7 +139,7 @@ if __name__=="__main__":
     pred = predictor(model_path=model_path,
                      test_mode=test_mode,
                      use_gpu=use_gpu,
-                     predictio_period=period)
+                     predict_period=period)
     pred.run() # start prediction process
     
     
