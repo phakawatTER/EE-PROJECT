@@ -64,7 +64,6 @@ class predictor:
         if self.start_day != current_day:
             self.should_terminate = True
         print(f"{self.start_datetime} ----> {load[0][0]}")
-        time.sleep(0.10)
 
     def run(self):
         while True:
@@ -89,21 +88,30 @@ if __name__=="__main__":
     import sys
     import argparse 
     import multiprocessing as mp
-    plot_process = mp.Process(target=plot_load)
-    plot_process.start() # run plot as a new process...
+    
+    manager = mp.Manager()
+    
     ap = argparse.ArgumentParser()
-    ap.add_argument("-m","--model",required=False,help="Path to your model file..",default="model/model1.h5")
+    ap.add_argument("-m","--model",required=False,help="Path to your model file..",default=os.path.join(current_dir,"model","model1.h5"))
     ap.add_argument("--gpu",required=False,default=False,help="Flag to use GPU for predicting",type=str2bool)
     ap.add_argument("-p","--period",required=False,default=15,help="Period of prediction",type=int)
+    ap.add_argument("--scatter-plot",required=False,default=False,help="Use scatter point for plot",type=str2bool)
+    ap.add_argument("--fill-plot",required=False,default=True,help="Fill area under load curve",type=str2bool)
     args = vars(ap.parse_args())
+    fill_plot=args["fill_plot"]
+    scatter_plot = args["scatter_plot"]
     period = args["period"]
     model_path = args["model"]
     use_gpu = (args["gpu"])
     
+    # PLOT
+    plot_process = mp.Process(target=plot_load,kwargs={"fill":fill_plot,"scatter":scatter_plot})
+    plot_process.start() # run plot as a new process...
+    
+    # PREDICTION
     pred = predictor(model_path=model_path,
                      use_gpu=use_gpu,
                      predict_period=period)
     pred.run() # start prediction process
-
-
-
+    
+    
