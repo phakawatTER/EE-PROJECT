@@ -20,12 +20,16 @@ current_dir = os.path.dirname(__file__)
 
 class predictor:
     # predict_period is in "minute"
-    def __init__(self,model_path="",predict_period=15,use_gpu=True):
+    def __init__(self,dt=datetime.datetime.today(),model_path="",predict_period=15,use_gpu=True,daydelta=0):
+        if not os.path.exists(os.path.join(current_dir,"graph_data")):
+            os.mkdir(os.path.join(current_dir,"graph_data"))
         self.should_terminate = False
         self.start_time = time.time() # start prediction time
         self.dataframe = pd.DataFrame(columns=["time","load"])
         self.predict_period = math.ceil(predict_period)
-        today = datetime.datetime.today() # get today datetime
+        timedelta = datetime.timedelta(days=daydelta)
+        today = dt+timedelta # get today datetime
+        self.date = today.date()+timedelta
         self.start_datetime = today.replace(hour=0,minute=0,second=0,microsecond=0)
         self.start_day = self.start_datetime.day
         self.use_gpu = use_gpu
@@ -59,7 +63,7 @@ class predictor:
         load = self.predict_load(tensor)
         df = pd.DataFrame(data={"time":[self.start_datetime],"load":[load[0][0]]})
         self.dataframe=self.dataframe.append(df,ignore_index=True)
-        self.dataframe.to_csv(os.path.join(current_dir,"graph_data","load.csv"))
+        self.dataframe.to_csv(os.path.join(current_dir,"graph_data","load_{}.csv".format(self.date)))
         
         if self.start_day != current_day:
             self.should_terminate = True
@@ -97,7 +101,13 @@ if __name__=="__main__":
     ap.add_argument("-p","--period",required=False,default=15,help="Period of prediction",type=int)
     ap.add_argument("--scatter-plot",required=False,default=False,help="Use scatter point for plot",type=str2bool)
     ap.add_argument("--fill-plot",required=False,default=True,help="Fill area under load curve",type=str2bool)
+    ap.add_argument("--daydelta",required=False,default=0,type=int,help="day delta")
+    ap.add_argument("--date",required=False,default=datetime.datetime.today(),help="date to predict")
     args = vars(ap.parse_args())
+    date = args["date"]
+    if date :
+        date = datetime.datetime.strptime(date,"%Y-%m-%d")
+    daydelta = args["daydelta"]
     fill_plot=args["fill_plot"]
     scatter_plot = args["scatter_plot"]
     period = args["period"]
@@ -105,13 +115,13 @@ if __name__=="__main__":
     use_gpu = (args["gpu"])
     
     # PLOT
-    plot_process = mp.Process(target=plot_load,kwargs={"fill":fill_plot,"scatter":scatter_plot})
+    plot_process = mp.Process(target=plot_load,kwargs={"fill":fill_plot,"scatter":scatter_plot,"daydelta":daydelta,"date":date.date()})
     plot_process.start() # run plot as a new process...
     
     # PREDICTION
     pred = predictor(model_path=model_path,
                      use_gpu=use_gpu,
-                     predict_period=period)
+                     predict_period=period,daydelta=daydelta,dt=date)
     pred.run() # start prediction process
     
     
