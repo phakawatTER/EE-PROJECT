@@ -28,9 +28,9 @@ class predictor:
         self.dataframe = pd.DataFrame(columns=["time","load"])
         self.predict_period = math.ceil(predict_period)
         timedelta = datetime.timedelta(days=daydelta)
-        today = dt+timedelta # get today datetime
-        self.date = today.date()+timedelta
-        self.start_datetime = today.replace(hour=0,minute=0,second=0,microsecond=0)
+        dt = dt+timedelta # get today datetime
+        self.date = dt.date()
+        self.start_datetime = dt.replace(hour=0,minute=0,second=0,microsecond=0)
         self.start_day = self.start_datetime.day
         self.use_gpu = use_gpu
         self.device = "/device:CPU:0"
@@ -75,7 +75,7 @@ class predictor:
                 self.task()
             else:
                 break
-        print(f"End Prediction on {datetime.date.today()}")
+        print(f"End Prediction on {self.date}")
 
 if __name__=="__main__":
     # function to parse string to boolean
@@ -93,8 +93,6 @@ if __name__=="__main__":
     import argparse 
     import multiprocessing as mp
     
-    manager = mp.Manager()
-    
     ap = argparse.ArgumentParser()
     ap.add_argument("-m","--model",required=False,help="Path to your model file..",default=os.path.join(current_dir,"model","model1.h5"))
     ap.add_argument("--gpu",required=False,default=False,help="Flag to use GPU for predicting",type=str2bool)
@@ -105,7 +103,7 @@ if __name__=="__main__":
     ap.add_argument("--date",required=False,default=datetime.datetime.today(),help="date to predict")
     args = vars(ap.parse_args())
     date = args["date"]
-    if date :
+    if type(date) != datetime.datetime :
         date = datetime.datetime.strptime(date,"%Y-%m-%d")
     daydelta = args["daydelta"]
     fill_plot=args["fill_plot"]
@@ -121,7 +119,9 @@ if __name__=="__main__":
     # PREDICTION
     pred = predictor(model_path=model_path,
                      use_gpu=use_gpu,
-                     predict_period=period,daydelta=daydelta,dt=date)
+                     predict_period=period,
+                     daydelta=daydelta,
+                     dt=date)
     pred.run() # start prediction process
     
     

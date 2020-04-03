@@ -33,17 +33,16 @@ class plot_load:
             day_index = self.date.weekday()
             weekday = get_weekday(day_index)
             self.ax1.title.set_text("Load Prediction for \"{} {}\"".format(weekday,self.date))
-            self.ax1.tick_params(axis='x', labelrotation=45)
             plt.setp(self.ax1.get_xticklabels(), rotation=30, horizontalalignment='right', fontsize='x-small')
             self.ax1.plot(graph_data["time"],graph_data["load"])
             self.ax1.set_xlabel('datetime')
             self.ax1.set_ylabel('load')
-            if self.fill:
+            if self.fill: # fill area under the curve
                 min_load = min(graph_data["load"].values)
                 self.ax1.fill_between(graph_data["time"],graph_data["load"],min_load,alpha=1,color="orange")
-            if self.scatter:
+            if self.scatter: # plot scatter point
                 self.ax1.scatter(graph_data["time"],graph_data["load"],color="b")
-            if len(graph_data["time"].values) > 20:
+            if len(graph_data["time"].values) > 20: 
                 for i,label in enumerate(self.ax1.get_xaxis().get_ticklabels()):
                     if i%int(len(graph_data["time"].values)*0.20)!=0:
                         label.set_visible(False)
