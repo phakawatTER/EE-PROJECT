@@ -48,7 +48,7 @@ class plot_load:
                         label.set_visible(False)
             
         except Exception as err:
-            print(err)
+            # print(err)
             pass
 
 if __name__ == "__main__":
