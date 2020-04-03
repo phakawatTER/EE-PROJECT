@@ -9,7 +9,7 @@ current_dir = os.path.dirname(__file__)
 
 class plot_load:
     
-    def __init__(self,date=datetime.date.today(),fill=True,scatter=False,daydelta=0):
+    def __init__(self,date=datetime.date.today(),fill=True,scatter=False,daydelta=0,update_interval=20):
         timedelta = datetime.timedelta(days=daydelta)
         self.date = date +timedelta
         self.fill = fill
@@ -17,7 +17,7 @@ class plot_load:
         self.data=[]
         fig = plt.figure()
         self.ax1 = fig.add_subplot(1,1,1)
-        ani = animation.FuncAnimation(fig,self.animate,interval=500)
+        ani = animation.FuncAnimation(fig,self.animate,interval=update_interval)
         plt.show()
         
     

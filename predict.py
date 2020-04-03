@@ -115,7 +115,7 @@ if __name__=="__main__":
     # PLOT
     plot_process = mp.Process(target=plot_load,kwargs={"fill":fill_plot,"scatter":scatter_plot,"daydelta":daydelta,"date":date.date()})
     plot_process.start() # run plot as a new process...
-    
+    time.sleep(3.5) # wait until graph show up
     # PREDICTION
     pred = predictor(model_path=model_path,
                      use_gpu=use_gpu,
