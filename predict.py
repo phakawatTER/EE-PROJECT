@@ -8,6 +8,7 @@ import time
 import os
 import math
 import sys
+from find_day import find_weekday_order_number
 from plot_load import plot_load
 
 # set keras backend
@@ -38,7 +39,7 @@ class predictor:
             self.device = "/GPU:0"
         with tf.device(self.device):
             self.model = load_model(model_path) # model for prediction
-                        
+
     def get_predict_datetime(self,prediction_time):
         day = (prediction_time.weekday()+1)%7
         month = prediction_time.month
@@ -52,6 +53,7 @@ class predictor:
             return p_load
 
     def task(self):
+        weekday_index_in_month = find_weekday_order_number(self.start_datetime)
         timedelta = datetime.timedelta(minutes=self.predict_period)
         self.start_datetime += timedelta
         current_day = self.start_datetime.day
@@ -59,7 +61,8 @@ class predictor:
         month = self.start_datetime.month
         hour = self.start_datetime.hour
         minute = self.start_datetime.minute
-        tensor = np.array([[day,month,hour,minute]]).astype(np.float32).reshape(-1,4)
+        input_vector = [day,weekday_index_in_month,month,hour,minute]
+        tensor = np.array([input_vector]).astype(np.float32).reshape(-1,len(input_vector))
         load = self.predict_load(tensor)
         df = pd.DataFrame(data={"time":[self.start_datetime],"load":[load[0][0]]})
         self.dataframe=self.dataframe.append(df,ignore_index=True)
@@ -94,7 +97,7 @@ if __name__=="__main__":
     import multiprocessing as mp
     
     ap = argparse.ArgumentParser()
-    ap.add_argument("-m","--model",required=False,help="Path to your model file..",default=os.path.join(current_dir,"model","model1.h5"))
+    ap.add_argument("-m","--model",required=False,help="Path to your model file..",default=os.path.join(current_dir,"model","m.h5"))
     ap.add_argument("--gpu",required=False,default=False,help="Flag to use GPU for predicting",type=str2bool)
     ap.add_argument("-p","--period",required=False,default=15,help="Period of prediction",type=int)
     ap.add_argument("--scatter-plot",required=False,default=False,help="Use scatter point for plot",type=str2bool)

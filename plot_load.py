@@ -4,6 +4,7 @@ from matplotlib import animation
 import pandas as pd
 import os 
 import datetime
+from find_day import find_weekday_order_number
 
 current_dir = os.path.dirname(__file__) 
 
@@ -32,7 +33,8 @@ class plot_load:
             self.ax1.grid(True)
             day_index = self.date.weekday()
             weekday = get_weekday(day_index)
-            self.ax1.title.set_text("Load Prediction for \"{} {}\"".format(weekday,self.date))
+            weekday_index_in_month =  find_weekday_order_number(self.date)+1
+            self.ax1.title.set_text("Load Prediction for \"{}({}) {}\"".format(weekday,weekday_index_in_month,self.date))
             plt.setp(self.ax1.get_xticklabels(), rotation=30, horizontalalignment='right', fontsize='x-small')
             self.ax1.plot(graph_data["time"],graph_data["load"])
             self.ax1.set_xlabel('datetime')
@@ -46,7 +48,6 @@ class plot_load:
                 for i,label in enumerate(self.ax1.get_xaxis().get_ticklabels()):
                     if i%int(len(graph_data["time"].values)*0.20)!=0:
                         label.set_visible(False)
-            
         except Exception as err:
             # print(err)
             pass

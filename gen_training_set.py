@@ -34,6 +34,7 @@ def get_month(month):
 
 
 for d in directory:
+    year,_,_,_ = d.split("_")
     files = os.listdir(os.path.join(dataset_path,d))
     try:
         for file in files:
@@ -42,8 +43,13 @@ for d in directory:
                     dd, mm, _, _ = file.split("_")
                 except:
                     dd,mm,_ =file.split("_")
-                dd = get_day(dd.lower())  # lowercase day
-                mm = get_month(mm.lower())  # lowercase month
+                weekday = dd.lower()
+                month = mm.lower()
+                dd = get_day(weekday)  # lowercase day
+                order_in_month = weekday.replace(dd,"")
+                if order_in_month == "":order_in_month=0
+                order_in_month = int(order_in_month)
+                mm = get_month(month)  # lowercase month
                 dd = DAYS.index(dd)
                 mm = MONTHS.index(mm)
                 dt = "{} {} ".format(dd, mm)
@@ -55,6 +61,8 @@ for d in directory:
                     try:
                         new_time = dt+t
                         csv.at[i, "time"]= new_time
+                        csv.at[i,"year"]=year
+                        csv.at[i,"order_in_month"]=order_in_month
                     except:
                         pass
                 dataframe = dataframe.append(csv, ignore_index=True)
@@ -62,6 +70,7 @@ for d in directory:
                 pass
     except:
         pass
+print(dataframe)
 clusters = {}
 def format_date(x):
     if len(str(x)) == 1:
@@ -103,7 +112,7 @@ dataframe.drop(columns=["time"],axis=1)
 
 dataframe= dataframe.sort_values(by="date",ascending=True)
 # dataframe=dataframe.reindex(columns=["norm_time","load"])
-dataframe=dataframe.reindex(columns=["day","month","hour","minute","load"])
+dataframe=dataframe.reindex(columns=["day","order_in_month","month","hour","minute","load"])
 # dataframe=dataframe.reindex(columns=["date","load"])
 dataframe=dataframe.dropna()# drop nan row
 dataframe.to_csv("training_set.csv", index=False)
